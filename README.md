@@ -1,12 +1,17 @@
-# React + Vite
+# In order to play the game you have to follow these steps:
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+1. Clone the git repository:
+   Input this command into the command line in order to clone the git repository:
+   git clone https://github.com/GrufasXd/React-memory-game.git
+2. Go to the project folder:
+  You can do so following this command in the command line:
+  cd memory-game
+3. Install the needed dependencies - Node.js and npm (if needed):
+   Do to this, write the following command in the command line:
+   npm install
+4. Start the application:
+   Write the following command into the command line:
+   npm start
+5. The game should now be accessible with this link - http://localhost:3000.
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+That's it, you're all set.
