@@ -1,9 +1,10 @@
 import { useParams } from "react-router-dom";
 import React, { use, useEffect, useRef, useState } from "react"
 import Card from "./Card.jsx"
+import { useNavigate } from "react-router-dom";
 
 function Memory_game(){
-    const cards = ["😀", "😶‍🌫️", "👻", "🥶", "💀", "😇", "😎", "🤢", "👾", "🎃", "🤬", "🥸", "😍", "😈", "👺", "😺"];
+    const cards = ["😀", "😶‍🌫️", "👻", "🥶", "💀", "😇", "😎", "🤢", "👾", "🎃", "🤬", "🥸", "😍", "😈", "👺", "😺", "💩", "🤯", "🤒", "🤫", "😤", "🥹", "🤓", "👹", "😻", "🙀", "🤖", "😷", "🤐", "😴", "🤮", "🥳"];
     const {difficulty} = useParams();
     const [shuffleCards, setShuffledCards] = useState([]);
     const [flippedCards, setFlippedCards] = useState([]);
@@ -14,12 +15,13 @@ function Memory_game(){
     const [gameOver, setGameOver] = useState(false);
     const timerRef = useRef(null);
     const [isPreviewing, setPreview] = useState(true);
+    const navigate = useNavigate();
 
     const cols = difficulty === "easy" ? 4 : difficulty === "medium" ? 4 : 8;
-    const rows = difficulty === "easy" ? 2 : difficulty === "medium" ? 4 : 4;
+    const rows = difficulty === "easy" ? 2 : difficulty === "medium" ? 4 : difficulty === "hard" ? 4 : 8;
 
     useEffect(() => {
-        let paircount = difficulty === "easy" ? 4 : difficulty === "medium" ? 8 : 16;
+        let paircount = difficulty === "easy" ? 4 : difficulty === "medium" ? 8 : difficulty === "hard" ? 16 : 32;
         const selected = shuffle(cards).slice(0, paircount);
         const pairedCards = shuffle([...selected, ...selected]);
         setShuffledCards(pairedCards);
@@ -43,8 +45,17 @@ function Memory_game(){
         if(pairsFound === movesNeeded()){
             clearInterval(timerRef.current);
             setGameOver(true);
+
+            const results = JSON.parse(localStorage.getItem("leaderboard")) || [];
+            results.push({
+                name: localStorage.getItem("player_name") || "Unknown",
+                time,
+                moves,
+                difficulty
+            });
+            localStorage.setItem("leaderboard", JSON.stringify(results));
         }
-    })
+    }, [pairsFound]);
 
     function shuffle(array){
         let copy = [...array];
@@ -76,6 +87,7 @@ function Memory_game(){
                 if(newMatched.length === movesNeeded()*2)
                     setTimeout(() => {
                     alert(`Nice, you found all the pairs! Time it took:${time} seconds, Moves: ${moves+1}`);
+                    navigate("/");
                 }, 500);
             }
             setTimeout(() => {
@@ -85,23 +97,24 @@ function Memory_game(){
     }
 
     function movesNeeded(){
-        return difficulty === 'easy' ? 4 : difficulty === 'medium' ? 8 : 16;
+        return difficulty === 'easy' ? 4 : difficulty === 'medium' ? 8 : difficulty === "hard" ? 16 : 32;
     }
 
+
     return(
-        <div className="board">
-            <div className="game-stats">
+        <div className={`board ${difficulty === "expert" ? "zoom-out" : ""}`}>
+            <div className={`game-stats ${difficulty === "expert" ? "expert-stats" : ""}`}>
                 <span className="game-time">Time: {time} seconds</span>
                 <span className="game-moves">Moves: {moves}</span>
                 <span className="game-pairs">Pairs found: {pairsFound} / {movesNeeded()} </span>
             </div>
-            <div className="card-grid"
-            style={{
-                display: "grid",
-                gridTemplateColumns: `repeat(${cols}, minmax(80px, 1fr))`,
-                gridTemplateRows: `repeat(${rows}, auto)`,
-                gap: "10px",
-            }}>
+            <div className={`card-grid ${difficulty === "expert" ? "expert" : ""}`}
+                style={{
+                    display: "grid",
+                    gridTemplateColumns: `repeat(${cols}, minmax(80px, 1fr))`,
+                    gridTemplateRows: `repeat(${rows}, auto)`,
+                    gap: "10px",
+                }}>
                 {shuffleCards.map((emoji, index) => (
                     <Card
                     key = {index}
@@ -111,6 +124,7 @@ function Memory_game(){
                     />
                 ))}
             </div>
+            <button className="come_back" onClick={() => navigate("/")}> Go back</button>
         </div>
     )
 }

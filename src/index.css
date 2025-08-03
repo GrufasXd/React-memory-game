@@ -36,13 +36,21 @@ body{
   background-color: red;
 }
 
+.expert-diff{
+  display: flex;
+  font-size: 0.6rem;
+  border-radius: 20px;
+  border: 2px solid black;
+  cursor: pointer;
+  background-color: purple;
+}
+
 .card-grid{
   display: grid;
   gap: 10px;
   padding: 20px;
   justify-content: center;
-  margin-top: 100px;
-  margin-left: 50px;
+  margin-top: 30px;
   background-color: rgb(90, 30, 146);
   border: 3px solid black;
   border-radius: 10px;
@@ -60,6 +68,14 @@ body{
   cursor: pointer;
 }
 
+.card-grid.expert .card{
+  width: 45px;
+  height: 45px;
+  font-size: 2rem;
+  gap: 6px;
+  padding: 12px;
+}
+
 .board {
   display: flex;
   flex-direction: column;
@@ -68,13 +84,20 @@ body{
   height: 90vh;
 }
 
+.board.zoom-out{
+  transform: scale(0.8);
+}
+
 .game-stats{
   color: aqua;
   justify-content: center; 
   align-items: center;
-  margin-left: 50px;
   font-size: 1.5rem;
-  margin-top: 50px;
+  margin-top: 100px;
+}
+
+.game-stats.expert-stats{
+  margin-top: 130px;
 }
 
 .game-time, .game-moves, .game-pairs{
@@ -83,5 +106,53 @@ body{
   margin-right: 10px;
   border-radius: 20px;
   padding: 5px 15px;
-  box-shadow: 2px 2px 5px rgba(0,0,0,0.4);
+  box-shadow: 2px 2px 5px 
+  rgba(0,0,0,0.4);
+}
+
+.name_input{
+  background-color: rgb(90, 30, 146);
+  color: aqua;
+  border-radius: 10px;
+  border: 3px solid black;
+  font-size: 1.5rem;
+}
+
+.come_back{
+  margin-top: 30px;
+  font-size: 1.5rem;
+  background-color: red;
+  border-radius: 20px;
+  border: 3px solid black;
+  cursor: pointer;
+  color: #FFF;
+}
+
+.leaderboard {
+  border: 2px solid black;
+  color: white;
+  padding: 10px;
+  background-color: rgba(0,0,0,0.3);
+  border-radius: 10px;
+  font-size: 1.3rem;
+  margin-left: 25px;
+}
+
+.leaderboard-wrap{
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 20px;
+  margin: 20px auto;
+}
+
+.reset-leaderboard {
+  padding: 10px 16px;
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-top: 60px;
 }
