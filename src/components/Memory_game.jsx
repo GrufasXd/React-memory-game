@@ -2,9 +2,19 @@ import { useParams } from "react-router-dom";
 import React, { use, useEffect, useRef, useState } from "react"
 import Card from "./Card.jsx"
 import { useNavigate } from "react-router-dom";
+import limboMusic from "/assets/limbo_song.mp3";
 
 function Memory_game(){
     const cards = ["😀", "😶‍🌫️", "👻", "🥶", "💀", "😇", "😎", "🤢", "👾", "🎃", "🤬", "🥸", "😍", "😈", "👺", "😺", "💩", "🤯", "🤒", "🤫", "😤", "🥹", "🤓", "👹", "😻", "🙀", "🤖", "😷", "🤐", "😴", "🤮", "🥳"];
+    const limboCards = [{id: 1, image: "/assets/key1.png"},
+        {id: 1, image: "/assets/key2.png"},
+        {id: 1, image: "/assets/key3.png"},
+        {id: 1, image: "/assets/key4.png"},
+        {id: 1, image: "/assets/key5.png"},
+        {id: 1, image: "/assets/key6.png"},
+        {id: 1, image: "/assets/key7.png"},
+        {id: 1, image: "/assets/key8.png"}
+    ]
     const {difficulty} = useParams();
     const [shuffleCards, setShuffledCards] = useState([]);
     const [flippedCards, setFlippedCards] = useState([]);
@@ -16,13 +26,27 @@ function Memory_game(){
     const timerRef = useRef(null);
     const [isPreviewing, setPreview] = useState(true);
     const navigate = useNavigate();
+    const audioRef = useRef(null);
+    const [isShuffling, setIsShuffling] = useState(false);
 
-    const cols = difficulty === "easy" ? 4 : difficulty === "medium" ? 4 : 8;
-    const rows = difficulty === "easy" ? 2 : difficulty === "medium" ? 4 : difficulty === "hard" ? 4 : 8;
+    const cols = difficulty === "easy" ? 4 : difficulty === "medium" || difficulty === "limboesque" ? 4 : 8;
+    const rows = difficulty === "easy" ? 2 : difficulty === "medium" || difficulty === "hard" || difficulty === "limboesque" ? 4 : 8;
 
     useEffect(() => {
-        let paircount = difficulty === "easy" ? 4 : difficulty === "medium" ? 8 : difficulty === "hard" ? 16 : 32;
-        const selected = shuffle(cards).slice(0, paircount);
+        let paircount = difficulty === "easy" ? 4 : difficulty === "medium" || difficulty === "limboesque" ? 8 : difficulty === "hard" ? 16 : 32;
+        let selected;
+        if(difficulty === "limboesque"){
+            selected = shuffle(limboCards).slice(0, paircount);
+            const pairedCards = shuffle([
+            ...selected.map(c => ({ ...c })),
+            ...selected.map(c => ({ ...c }))
+            ]);
+            setShuffledCards(pairedCards);
+        } else{
+            selected = shuffle(cards).slice(0, paircount);
+            const pairedCards = shuffle([...selected, ...selected]);
+            setShuffledCards(pairedCards);
+        }
         const pairedCards = shuffle([...selected, ...selected]);
         setShuffledCards(pairedCards);
         setPreview(true);
@@ -40,6 +64,63 @@ function Memory_game(){
         }, 1000);
         return() => clearInterval(timerRef.current);
     }, []);
+    
+    useEffect(() =>{
+        if(difficulty !== "limboesque") return;
+
+        const shuffleInterval = setInterval(() => {
+            setIsShuffling(true);
+            setTimeout(() => {
+            setShuffledCards(prev => {
+                const matched =  matchedCards.map(index => ({index, card: prev[index] }));
+                const unmatched = prev
+                    .map((card, index) => matchedCards.includes(index) || flippedCards.includes(index) ? null : {index, card})
+                    .filter(Boolean);
+
+                const shuffledUnmatched = shuffle(unmatched);
+
+                const newCards = [...prev];
+                const positions = unmatched.map(u => u.index);
+                const shuffledCardsOnly = shuffle(unmatched.map(u => u.card));
+
+                positions.forEach((pos,i) =>{
+                    newCards[pos] = shuffledCardsOnly[i];
+                });
+
+                return newCards;
+            });
+            setIsShuffling(false);
+            }, 500);
+        }, 5000);
+
+        return () => clearInterval(shuffleInterval);
+    }, [difficulty, matchedCards]);
+
+    useEffect(() =>{
+        if(difficulty !== "limboesque") return;
+
+        if(time >= 60){
+            clearInterval(timerRef.current)
+            alert("Time's up! I guess you're not as good as i thought");
+            navigate("/");
+        }
+    }, [time])
+
+    useEffect(() =>{
+        if(difficulty === "limboesque"){
+            audioRef.current = new Audio(limboMusic);
+            audioRef.current.currentTime = 133;
+            audioRef.current.play().catch(err => {
+                console.log("Autoplay blocked, waiting for user interaction", err);
+            });
+        }
+        return () => {
+            if(audioRef.current){
+                audioRef.current.pause();
+                audioRef.current = null;
+            }
+        };
+    }, [difficulty]);
 
     useEffect(() => {
         if(pairsFound === movesNeeded()){
@@ -79,7 +160,10 @@ function Memory_game(){
         if(newFlipped.length === 2){
             setmoves(prev => prev + 1);
             const [first, second] = newFlipped;
-            if(shuffleCards[first] === shuffleCards[second]){
+            if(
+                (typeof shuffleCards[first] === "string" && shuffleCards[first] === shuffleCards[second]) ||
+                (typeof shuffleCards[first] === "object" && shuffleCards[first].image === shuffleCards[second].image)
+            ){
                 const newMatched = [...matchedCards, first, second];
                 setMatchedCards(newMatched);
                 setPairsFound(prev => prev + 1);
@@ -97,9 +181,8 @@ function Memory_game(){
     }
 
     function movesNeeded(){
-        return difficulty === 'easy' ? 4 : difficulty === 'medium' ? 8 : difficulty === "hard" ? 16 : 32;
+        return difficulty === "easy" ? 4 : difficulty === "medium" || difficulty === "limboesque" ? 8 : difficulty === "hard" ? 16 : 32;
     }
-
 
     return(
         <div className={`board ${difficulty === "expert" ? "zoom-out" : ""}`}>
@@ -115,12 +198,14 @@ function Memory_game(){
                     gridTemplateRows: `repeat(${rows}, auto)`,
                     gap: "10px",
                 }}>
-                {shuffleCards.map((emoji, index) => (
+                {shuffleCards.map((card, index) => (
                     <Card
                     key = {index}
-                    emoji = {emoji}
+                    emoji = {typeof card === "string" ? card : null }
+                    image = {typeof card === "object" && card.image ? card.image : null}
                     isFlipped={isPreviewing || flippedCards.includes(index) || matchedCards.includes(index)}
                     onClick={() => handleCardClick(index)}
+                    className = {isShuffling ? "shuffling" : ""}
                     />
                 ))}
             </div>
